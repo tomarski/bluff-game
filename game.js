@@ -19,7 +19,7 @@ let isPlayerTurn = true;
 let isFirstTurn = true; 
 let isMuted = false;
 let gameDifficulty = 'medium'; 
-let isAnimationRunning = false; // El akışını kilitleyen mekanizma
+let isAnimationRunning = false; 
 
 let trackedCardCounts = {}; 
 
@@ -40,8 +40,13 @@ const mainMenu = document.getElementById('main-menu');
 const gameBoard = document.getElementById('game-board');
 const startGameButton = document.getElementById('start-game-button');
 const aboutButton = document.getElementById('about-button');
+
+// Yenilenen Ayarlar Menüsü ve Buton Seçicileri Güncellendi
+const settingsToggleBtn = document.getElementById('settings-toggle-btn');
+const settingsDropdown = document.getElementById('settings-dropdown');
 const restartButton = document.getElementById('restart-button');
 const backMenuButton = document.getElementById('back-menu-button');
+
 const difficultySelect = document.getElementById('difficulty-select');
 const cpuDifficultyBadge = document.getElementById('cpu-difficulty-badge');
 const cpuChatBubble = document.getElementById('cpu-chat-bubble');
@@ -56,12 +61,10 @@ const bsButton = document.getElementById('bs-button');
 const playTurnButton = document.getElementById('play-turn-button');
 const claimSelect = document.getElementById('claim-select');
 
-// Yenilenen Masada Gösterim Altyapısı
 const revealedCardsContainer = document.getElementById('revealed-cards-container');
 const toastNotification = document.getElementById('toast-notification');
 const tableCenter = document.getElementById('table-center');
 
-// Modal Elementleri (Sadece bitiş durumları için)
 const customModal = document.getElementById('custom-modal');
 const modalMessage = document.getElementById('modal-message');
 const modalCloseButton = document.getElementById('modal-close-button');
@@ -81,6 +84,19 @@ const soundBluff = document.getElementById('sound-bluff');
 const soundFunnyLaugh = document.getElementById('sound-funnylaugh');
 
 let chatTimeoutId = null; 
+
+// --- DIŞLI AYARLAR MENÜSÜ AKIŞI ---
+settingsToggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    settingsDropdown.classList.toggle('hidden');
+});
+
+// Menü dışındaki boş bir yere tıklandığında menünün kapanması
+document.addEventListener('click', (e) => {
+    if (settingsDropdown && !settingsDropdown.classList.contains('hidden')) {
+        settingsDropdown.classList.add('hidden');
+    }
+});
 
 // --- AKICI BANNER BİLDİRİM SİSTEMİ (TOAST COUT) ---
 function showToast(message, duration = 3000) {
@@ -119,8 +135,12 @@ function toggleMute() {
     muteToggleMenu.innerText = txt;
     muteToggleGame.innerText = isMuted ? "🔇" : "🔊";
 }
+
+muteToggleGame.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    toggleMute();
+});
 muteToggleMenu.addEventListener('click', toggleMute);
-muteToggleGame.addEventListener('click', toggleMute);
 
 function showGameOverModal(message) {
     modalMessage.innerHTML = message;
@@ -144,11 +164,21 @@ aboutButton.addEventListener('click', () => {
     modalMessage.innerHTML = `<strong>BLÖF KURALLARI</strong><br><br>• 52 kart dağıtılır. <strong>Sinek 2'li (2♣)</strong> olan oyuna başlar.<br>• Herkes son iddia edilen kartın altını, üstünü veya aynısını iddia ederek kart atmalıdır.<br>• Blöf kontrolü sonucu eğer yalan beyanda bulunulduysa yerdeki tüm kartlar, yalan iddiada bulunan tarafından alınır.<br>• Elindeki tüm kartları ilk bitiren oyunu kazanır.`;
     customModal.classList.add('active');
     modalCloseButton.classList.remove('hidden');
-    modalGameoverButtons.classList.add('hidden');
+    modalGameoverButtons.add('hidden');
 });
 
-restartButton.addEventListener('click', initGame);
-backMenuButton.addEventListener('click', () => { gameBoard.classList.add('hidden'); mainMenu.classList.remove('hidden'); });
+restartButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    settingsDropdown.classList.add('hidden');
+    initGame();
+});
+
+backMenuButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    settingsDropdown.classList.add('hidden');
+    gameBoard.classList.add('hidden');
+    mainMenu.classList.remove('hidden');
+});
 
 // --- OYUNU BAŞLAT ---
 function initGame() {
@@ -227,7 +257,6 @@ function updateUI() {
     cpuCardCountSpan.innerText = cpuHand.length;
     potCountSpan.innerText = pot.length;
     
-    // BUGFIX 1: "Sinek 2 ile Başla" ifadesi sadece isFirstTurn gerçek anlamda aktifken (oyun başında) gözükür.
     if (lastClaimedRank) {
         lastRankSpan.innerText = `${lastClaimedCount} Tane [ ${lastClaimedRank} ]`;
     } else {
@@ -438,11 +467,10 @@ function checkBS(caller) {
     lastActualCards.forEach(card => {
         const miniCard = document.createElement('div');
         miniCard.classList.add('mini-card', card.color);
-        miniCard.innerText = `${card.rank}${card.symbol}`; // Değerler karta yazılıyor
+        miniCard.innerText = `${card.rank}${card.symbol}`; 
         revealedCardsContainer.appendChild(miniCard);
     });
 
-    // BUGFIX 2: Tarayıcının metinleri tam render edebilmesi için delay 100ms'ye çıkarıldı, bembeyaz görünme engellendi!
     setTimeout(() => {
         const cards = revealedCardsContainer.querySelectorAll('.mini-card');
         cards.forEach(c => c.classList.add('reveal'));
@@ -480,7 +508,6 @@ function checkBS(caller) {
 
     showToast(toastMsg, 3000);
 
-    // BUGFIX 2 DEVAM: Kartlar masada tam 2.5 saniye (2500ms) açık kalır, ardından uçma animasyonu başlar.
     setTimeout(() => {
         if (loserOfHand === "PLAYER") {
             revealedCardsContainer.classList.add('fly-to-player');
@@ -513,7 +540,7 @@ function checkBS(caller) {
                 updateUI();
                 setTimeout(cpuTurn, 1000);
             }
-        }, 500); // 500ms uçma animasyonu payı
+        }, 500); 
 
     }, 2500); 
 }

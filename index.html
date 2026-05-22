@@ -34,7 +34,16 @@
     </div>
 
     <div id="game-board" class="hidden">
-        <button id="mute-toggle-game" class="game-mute-btn">🔊</button>
+        <div class="top-right-controls">
+            <button id="mute-toggle-game" class="game-mute-btn">🔊</button>
+            <button id="settings-toggle-btn" class="game-settings-btn">⚙️</button>
+            
+            <div id="settings-dropdown" class="settings-menu hidden">
+                <button id="restart-button">🔄 Yeniden Başla</button>
+                <button id="back-menu-button">🏠 Ana Menü</button>
+            </div>
+        </div>
+
         <h1>Blöf</h1>
         <h2>Bullsh*t</h2>
         
@@ -52,11 +61,6 @@
             <div id="revealed-cards-container" class="hidden"></div>
 
             <button id="bs-button" disabled>BLÖF (BS)!</button>
-            
-            <div class="game-controls-nav">
-                <button id="restart-button">🔄 Yeniden Başla</button>
-                <button id="back-menu-button">🏠 Ana Menü</button>
-            </div>
         </div>
 
         <div id="player-area" class="player-zone">
