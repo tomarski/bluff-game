@@ -59,6 +59,7 @@ const claimSelect = document.getElementById('claim-select');
 // Yenilenen Masada Gösterim Altyapısı
 const revealedCardsContainer = document.getElementById('revealed-cards-container');
 const toastNotification = document.getElementById('toast-notification');
+const tableCenter = document.getElementById('table-center');
 
 // Modal Elementleri (Sadece bitiş durumları için)
 const customModal = document.getElementById('custom-modal');
@@ -74,7 +75,7 @@ const soundPlay = document.getElementById('sound-play');
 const soundWin = document.getElementById('sound-win');
 const soundOver = document.getElementById('sound-over');
 const soundBullshit = document.getElementById('sound-bullshit');
-const soundOhShit = document.getElementById('sound-ohshit');
+const soundOhshit = document.getElementById('sound-ohshit');
 const soundLaugh = document.getElementById('sound-laugh');
 const soundBluff = document.getElementById('sound-bluff');
 const soundFunnyLaugh = document.getElementById('sound-funnylaugh');
@@ -85,7 +86,6 @@ let chatTimeoutId = null;
 function showToast(message, duration = 3000) {
     toastNotification.innerHTML = message;
     toastNotification.classList.remove('hidden');
-    // Tarayıcının DOM'u yakalaması için ufak bir tetikleyici delay
     setTimeout(() => toastNotification.classList.add('visible'), 50);
 
     setTimeout(() => {
@@ -122,7 +122,6 @@ function toggleMute() {
 muteToggleMenu.addEventListener('click', toggleMute);
 muteToggleGame.addEventListener('click', toggleMute);
 
-// Sadece Kritik Duyurular ve Game Over İçin Pop-up Modal Kullanımı
 function showGameOverModal(message) {
     modalMessage.innerHTML = message;
     customModal.classList.add('active');
@@ -142,7 +141,7 @@ startGameButton.addEventListener('click', () => {
 });
 
 aboutButton.addEventListener('click', () => {
-    modalMessage.innerHTML = `<strong>BLÖF TURNUVA KURALLARI</strong><br><br>• 52 kart dağıtılır. <strong>Sinek 2'li (2♣)</strong> olan oyuna başlar.<br>• Herkes son iddia edilen kartın altını, üstünü veya aynısını iddia ederek kart atmalıdır.<br>• Blöf kontrolü otomatik animasyonlarla yürütülür.`;
+    modalMessage.innerHTML = `<strong>BLÖF KURALLARI</strong><br><br>• 52 kart dağıtılır. <strong>Sinek 2'li (2♣)</strong> olan oyuna başlar.<br>• Herkes son iddia edilen kartın altını, üstünü veya aynısını iddia ederek kart atmalıdır.<br>• Blöf kontrolü sonucu eğer yalan beyanda bulunulduysa yerdeki tüm kartlar, yalan iddiada bulunan tarafından alınır.<br>• Elindeki tüm kartları ilk bitiren oyunu kazanır.`;
     customModal.classList.add('active');
     modalCloseButton.classList.remove('hidden');
     modalGameoverButtons.classList.add('hidden');
@@ -156,7 +155,9 @@ function initGame() {
     playAudio(soundShuffle);
     isAnimationRunning = false;
     revealedCardsContainer.classList.add('hidden');
+    revealedCardsContainer.className = ''; 
     revealedCardsContainer.innerHTML = '';
+    tableCenter.classList.remove('shaking');
     
     ranks.forEach(r => trackedCardCounts[r] = 0);
     const diffTexts = { easy: "Kolay 🟢", medium: "Orta 🟡", hard: "Zor 🔴" };
@@ -226,10 +227,11 @@ function updateUI() {
     cpuCardCountSpan.innerText = cpuHand.length;
     potCountSpan.innerText = pot.length;
     
+    // BUGFIX 1: "Sinek 2 ile Başla" ifadesi sadece isFirstTurn gerçek anlamda aktifken (oyun başında) gözükür.
     if (lastClaimedRank) {
         lastRankSpan.innerText = `${lastClaimedCount} Tane [ ${lastClaimedRank} ]`;
     } else {
-        lastRankSpan.innerText = "Yok (Sinek 2 ile Başla)";
+        lastRankSpan.innerText = isFirstTurn ? "Yok (Sinek 2 ile Başla)" : "Yok (İstediğin Kartla Başla)";
     }
 
     let validOptions = getValidOptions(lastClaimedRank);
@@ -292,9 +294,6 @@ playTurnButton.addEventListener('click', () => {
 
     showToast(`Ortaya ${playedCount} kart fırlattın ve "${playedCount} tane ${claimedCard}" dedin!`, 2500);
 
-    if (checkGameOver()) return;
-
-    // Bilgisayarın düşünme süresi
     setTimeout(() => {
         let cpuWantsToCallBS = false;
         let knownCountOfThisRank = trackedCardCounts[claimedCard]; 
@@ -320,9 +319,18 @@ playTurnButton.addEventListener('click', () => {
         if (pot.length <= 2 && playedCount === 1) cpuWantsToCallBS = false;
 
         if (cpuWantsToCallBS) {
-            checkBS("CPU");
+            bsButton.disabled = true;
+            playTurnButton.disabled = true;
+            tableCenter.classList.add('shaking');
+            playAudio(soundBullshit);
+            
+            setTimeout(() => {
+                tableCenter.classList.remove('shaking');
+                checkBS("CPU");
+            }, 2000);
         } else {
             trackedCardCounts[claimedCard] += playedCount;
+            if (checkGameOver()) return;
             cpuTurn();
         }
     }, 2000);
@@ -355,8 +363,6 @@ function cpuFirstTurn() {
 }
 
 function cpuTurn() {
-    if (checkGameOver()) return;
-
     if (cpuHand.length <= 4 && Math.random() < 0.4) cpuSpeak('cpuWinning');
     else if (cpuHand.length >= 16 && Math.random() < 0.4) cpuSpeak('cpuLosing');
 
@@ -399,108 +405,117 @@ function cpuTurn() {
     }, 1500);
 }
 
-// --- GERİLİM TETİKLEYİCİSİ: OYUNCU BLÖF BUTONUNA BASTIĞINDA ---
+// --- OYUNCU BLÖF BUTONUNA BASTIĞINDA ---
 bsButton.addEventListener('click', () => {
     if (isAnimationRunning) return;
     isAnimationRunning = true;
 
-    // 1. Hemen loading efektini butona giydir ve kilitle
     bsButton.disabled = true;
     playTurnButton.disabled = true;
     bsButton.classList.add('loading-bs');
-    bsButton.innerText = "⏳ KARTLAR AÇILIYOR...";
+    bsButton.innerText = "⏳ Kontrol Ediliyor...";
+    tableCenter.classList.add('shaking');
 
-    // 2. Tam o esnada bullshit.mp3 tetikleniyor
     playAudio(soundBullshit);
     
-    // 3. 2 saniyelik gerilim geri sayımından sonra kartları masada aç
     setTimeout(() => {
-        checkBS("PLAYER");
+        tableCenter.classList.remove('shaking'); 
+        checkBS("PLAYER"); 
     }, 2000);
 });
 
-// --- MODERN VE AKICI KART AÇMA VE BLÖF KONTROL ALGORİTMASI ---
+// --- KART AÇMA VE UÇMA ALGORİTMASI ---
 function checkBS(caller) {
     isAnimationRunning = true;
     let wasBluffing = lastActualCards.some(c => c.rank !== lastClaimedRank);
     let toastMsg = "";
+    let loserOfHand = ""; 
 
-    // GÖRSEL KANIT: Kartları masanın ortasında oluştur ve animasyonla döndür
     revealedCardsContainer.innerHTML = '';
+    revealedCardsContainer.className = ''; 
     revealedCardsContainer.classList.remove('hidden');
 
     lastActualCards.forEach(card => {
         const miniCard = document.createElement('div');
         miniCard.classList.add('mini-card', card.color);
-        miniCard.innerText = `${card.rank}${card.symbol}`;
+        miniCard.innerText = `${card.rank}${card.symbol}`; // Değerler karta yazılıyor
         revealedCardsContainer.appendChild(miniCard);
-        // Kübik geçiş efekti için tetikleme
-        setTimeout(() => miniCard.classList.add('reveal'), 50);
     });
 
-    // Durumlara Göre Ses Eşleşmeleri ve Mesajlar
+    // BUGFIX 2: Tarayıcının metinleri tam render edebilmesi için delay 100ms'ye çıkarıldı, bembeyaz görünme engellendi!
+    setTimeout(() => {
+        const cards = revealedCardsContainer.querySelectorAll('.mini-card');
+        cards.forEach(c => c.classList.add('reveal'));
+    }, 100);
+
     if (caller === "PLAYER") {
         if (wasBluffing) {
-            // Senaryo 1-A: Haklıysan (Bot Yakalandı) -> laugh.mp3
             playAudio(soundLaugh);
-            toastMsg = `🎯 YAKALADIN! Bilgisayar blöf yapıyordu. Yerdeki ${pot.length} kartı bilgisayar çekiyor!`;
+            toastMsg = `🎯 YAKALADIN! Bilgisayar blöf yapıyordu!`;
             cpuHand.push(...pot);
+            loserOfHand = "CPU";
             setTimeout(() => cpuSpeak('playerCaughtCpuBluff'), 400);
         } else {
-            // Senaryo 1-B: Hatalıysan (Bot dürüst çıktı) -> ohshit.mp3
-            playAudio(soundOhShit);
-            toastMsg = `❌ HATA! Bilgisayar dürüsttü. Yerdeki ${pot.length} kartı sen çekiyorsun!`;
+            playAudio(soundOhshit);
+            toastMsg = `❌ HATA! Bilgisayar dürüsttü!`;
             playerHand.push(...pot);
+            loserOfHand = "PLAYER";
             setTimeout(() => cpuSpeak('playerWrongCall'), 400);
         }
     } else if (caller === "CPU") {
-        // Bilgisayar "Blöf" dediğinde de anında masada kartlar yüzünü açar
         if (wasBluffing) {
-            // Senaryo 2-A: Bilgisayar Haklıysa (Sen yakalandın) -> bluff.mp3
             playAudio(soundBluff);
-            toastMsg = `🤖 Bilgisayar BLÖFÜNÜ yakaladı! Yerdeki tüm kartları eline çektin.`;
+            toastMsg = `🤖 Bilgisayar BLÖFÜNÜ yakaladı!`;
             playerHand.push(...pot);
+            loserOfHand = "PLAYER";
             setTimeout(() => cpuSpeak('cpuCaughtPlayerBluff'), 400);
         } else {
-            // Senaryo 2-B: Bilgisayar Hatalıysa (Sen dürüsttün, bot patladı) -> funnylaugh.mp3
             playAudio(soundFunnyLaugh);
-            toastMsg = `🔥 Bilgisayar haksız yere blöf dedi! Tüm desteyi bilgisayar çekiyor.`;
+            toastMsg = `🔥 Bilgisayar haksız yere blöf dedi!`;
             cpuHand.push(...pot);
+            loserOfHand = "CPU";
             setTimeout(() => cpuSpeak('cpuWrongCall'), 400);
         }
     }
 
-    // Sonucu üst şeritle (Toast) ilan et
-    showToast(toastMsg, 3500);
+    showToast(toastMsg, 3000);
 
-    // KARTLARIN MASADA KALMA SÜRESİ VE OTOMATİK AKIŞ (3 Saniye Sonra)
+    // BUGFIX 2 DEVAM: Kartlar masada tam 2.5 saniye (2500ms) açık kalır, ardından uçma animasyonu başlar.
     setTimeout(() => {
-        pot = [];
-        lastClaimedRank = null;
-        lastActualCards = [];
-        lastClaimedCount = 0;
-        
-        // Botun hafızasını tazele
-        ranks.forEach(r => trackedCardCounts[r] = 0);
-        cpuHand.forEach(c => trackedCardCounts[c.rank]++);
-
-        playerHand.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
-        
-        revealedCardsContainer.classList.add('hidden');
-        revealedCardsContainer.innerHTML = '';
-        isAnimationRunning = false;
-
-        if (checkGameOver()) return;
-
-        if (caller === "PLAYER") {
-            isPlayerTurn = true;
-            updateUI();
+        if (loserOfHand === "PLAYER") {
+            revealedCardsContainer.classList.add('fly-to-player');
         } else {
-            isPlayerTurn = false;
-            updateUI();
-            setTimeout(cpuTurn, 1000);
+            revealedCardsContainer.classList.add('fly-to-cpu');
         }
-    }, 3500);
+
+        setTimeout(() => {
+            pot = [];
+            lastClaimedRank = null;
+            lastActualCards = [];
+            lastClaimedCount = 0;
+            
+            ranks.forEach(r => trackedCardCounts[r] = 0);
+            cpuHand.forEach(c => trackedCardCounts[c.rank]++);
+            playerHand.sort((a, b) => ranks.indexOf(a.rank) - ranks.indexOf(b.rank));
+            
+            revealedCardsContainer.classList.add('hidden');
+            revealedCardsContainer.innerHTML = '';
+            revealedCardsContainer.className = ''; 
+            isAnimationRunning = false;
+
+            if (checkGameOver()) return;
+
+            if (caller === "PLAYER") {
+                isPlayerTurn = true;
+                updateUI();
+            } else {
+                isPlayerTurn = false;
+                updateUI();
+                setTimeout(cpuTurn, 1000);
+            }
+        }, 500); // 500ms uçma animasyonu payı
+
+    }, 2500); 
 }
 
 function checkGameOver() {
