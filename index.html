@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blöf (Altı/Üstü) Oyunu</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="image/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <div id="toast-notification" class="toast hidden"></div>
+
+    <div id="main-menu">
+        <h1>Blöf (Bullshit)</h1>
+        <h2>Altı / Üstü / Aynısı Sürümü</h2>
+        <div class="menu-buttons">
+            <div style="margin-bottom: 10px;">
+                <label for="difficulty-select" style="font-weight: bold; color: #ffcc00;">Zorluk Seviyesi: </label>
+                <select id="difficulty-select" style="padding: 10px; font-size: 16px;">
+                    <option value="easy">Kolay (Saf Bot)</option>
+                    <option value="medium" selected>Orta (Kart Sayan Bot)</option>
+                    <option value="hard">Zor (Dahi Bot)</option>
+                </select>
+            </div>
+            <button id="start-game-button">Oyuna Başla</button>
+            <button id="about-button">Nasıl Oynanır?</button>
+            <button id="mute-toggle-menu" class="audio-btn">🔊 Ses: Açık</button>
+        </div>
+    </div>
+
+    <div id="game-board" class="hidden">
+        <button id="mute-toggle-game" class="game-mute-btn">🔊</button>
+        <h1>Blöf (Altı / Üstü / Aynısı)</h1>
+        
+        <div id="cpu-area" class="player-zone" style="position: relative;">
+            <h3>Rakip (Bilgisayar) <span id="cpu-difficulty-badge" style="font-size: 12px; background: #ffcc00; color: black; padding: 2px 6px; border-radius: 3px; margin-left: 5px;">Orta</span></h3>
+            <p>Kalan Kart: <span id="cpu-card-count">13</span></p>
+            <div id="cpu-chat-bubble" class="chat-bubble hidden">Merhaba!</div>
+        </div>
+
+        <div id="table-center">
+            <h3>Ortadaki Deste</h3>
+            <div id="pot-info">Yerdeki Kart Sayısı: <span id="pot-count">0</span></div>
+            <div id="last-played-info">Yerdeki Son İddia: <span id="last-rank">Yok</span></div>
+            
+            <div id="revealed-cards-container" class="hidden"></div>
+
+            <button id="bs-button" disabled>BLÖF (BS)!</button>
+            
+            <div class="game-controls-nav">
+                <button id="restart-button">🔄 Yeniden Başla</button>
+                <button id="back-menu-button">🏠 Ana Menü</button>
+            </div>
+        </div>
+
+        <div id="player-area" class="player-zone">
+            <h3>Senin Elin</h3>
+            <div id="player-cards"></div>
+            
+            <div id="claim-controls">
+                <label for="claim-select">İddia Et: </label>
+                <select id="claim-select"></select>
+                <button id="play-turn-button">Kartı At</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content">
+            <p id="modal-message">Bildirim Mesajı</p>
+            <button id="modal-close-button">Tamam</button>
+            <div id="modal-gameover-buttons" class="hidden" style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
+                <button id="modal-restart-btn" style="background: #5bc0de; color: white;">🔄 Yeniden Başla</button>
+                <button id="modal-menu-btn" style="background: #777; color: white;">🏠 Ana Menü</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="sound-shuffle" src="sounds/shuffle.mp3" preload="auto"></audio>
+    <audio id="sound-play" src="sounds/play.mp3" preload="auto"></audio>
+    <audio id="sound-win" src="sounds/gamewin.mp3" preload="auto"></audio>
+    <audio id="sound-over" src="sounds/gameover.mp3" preload="auto"></audio>
+    <audio id="sound-bullshit" src="sounds/bullshit.mp3" preload="auto"></audio>
+    <audio id="sound-ohshit" src="sounds/ohshit.mp3" preload="auto"></audio>
+    <audio id="sound-laugh" src="sounds/laugh.mp3" preload="auto"></audio>
+    <audio id="sound-bluff" src="sounds/bluff.mp3" preload="auto"></audio>
+    <audio id="sound-funnylaugh" src="sounds/funnylaugh.mp3" preload="auto"></audio>
+
+    <script src="game.js"></script>
+</body>
+</html>

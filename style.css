@@ -1,0 +1,283 @@
+body {
+    background-color: #1a472a; 
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* --- AKICI BİLDİRİM ŞERİDİ (TOAST) STİLLERİ --- */
+.toast {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 48, 27, 0.95);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 30px;
+    border: 2px solid #ffcc00;
+    font-weight: bold;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    z-index: 9999;
+    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+    max-width: 90%;
+    width: max-content;
+}
+
+.toast.visible {
+    top: 20px;
+    opacity: 1;
+}
+
+/* --- MASADA KART REVEAL (FİLİP ANIMASYONU) --- */
+#revealed-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 8px;
+    border: 1px dashed #ffcc00;
+}
+
+.mini-card {
+    width: 55px;
+    height: 80px;
+    background: white;
+    border-radius: 6px;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    transform: scaleX(0);
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mini-card.reveal {
+    transform: scaleX(1);
+}
+
+/* --- OYUN BUTONLARI YÜKLENİYOR DURUMU --- */
+#bs-button.loading-bs {
+    background: #555555 !important;
+    color: #ffcc00 !important;
+    border: 2px solid #ffcc00;
+    animation: pulseGlow 1s infinite alternate;
+}
+
+@keyframes pulseGlow {
+    from { box-shadow: 0 0 5px rgba(255,204,0,0.4); }
+    to { box-shadow: 0 0 20px rgba(255,204,0,0.8); }
+}
+
+/* --- GENEL ARABİRİM --- */
+#main-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 85vh;
+}
+
+#main-menu h1 {
+    font-size: 3.5rem;
+    color: #ffcc00;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+#main-menu h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-top: 0;
+    margin-bottom: 40px;
+    color: #ddd;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 250px;
+}
+
+.menu-buttons button {
+    font-size: 20px;
+    padding: 15px;
+}
+
+.audio-btn {
+    background: #4a7c59 !important;
+    color: white !important;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#game-board {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 85vh;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.game-mute-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: 1px solid #ffcc00;
+    padding: 8px 12px;
+    font-size: 18px;
+    border-radius: 5px;
+    z-index: 10;
+}
+
+.player-zone {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+#table-center {
+    background: #0f301b;
+    border: 3px dashed #fff;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 15px 0;
+}
+
+#player-cards {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.card {
+    background: white;
+    padding: 15px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-width: 45px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: transform 0.2s, border-color 0.2s;
+    user-select: none;
+}
+
+.card.red { color: #d9534f; }
+.card.black { color: #222222; }
+
+.card.selected {
+    border: 3px solid #ffcc00;
+    transform: translateY(-15px);
+    box-shadow: 0 8px 12px rgba(0,0,0,0.5);
+}
+
+#claim-controls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+select {
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+button {
+    background: #ffcc00;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    transition: background 0.2s;
+}
+
+button:hover:not(:disabled) { background: #ffe066; }
+button:disabled {
+    background: #555;
+    color: #aaa;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+#bs-button {
+    background: #d9534f;
+    color: white;
+    font-size: 18px;
+    padding: 12px 30px;
+    margin-top: 10px;
+    width: 80%;
+    max-width: 300px;
+    transition: all 0.3s ease;
+}
+
+#bs-button:hover:not(:disabled) { background: #c9302c; }
+
+.game-controls-nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+#restart-button { background: #5bc0de; color: white; font-size: 14px; padding: 8px 15px; }
+#back-menu-button { background: #777; color: white; font-size: 14px; padding: 8px 15px; }
+
+/* MODAL OVERLAY (YALNIZ GAME OVER SÜRÜMÜ) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex; justify-content: center; align-items: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 999;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-content {
+    background: #0f301b; border: 3px solid #ffcc00;
+    padding: 30px; border-radius: 15px; text-align: center;
+    max-width: 450px; width: 80%;
+}
+
+.chat-bubble {
+    position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%);
+    background: #ffffff; color: #222222; padding: 10px 15px;
+    border-radius: 12px; font-size: 14px; font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); width: max-content;
+    max-width: 280px; z-index: 20; border: 2px solid #ffcc00;
+}
+.chat-bubble::after {
+    content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    border-width: 0 10px 10px 10px; border-style: solid;
+    border-color: transparent transparent #ffffff transparent;
+}
