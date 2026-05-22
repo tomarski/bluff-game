@@ -20,6 +20,7 @@ let isFirstTurn = true;
 let isMuted = false;
 let gameDifficulty = 'medium'; 
 let isAnimationRunning = false; 
+let playerNickname = "Oyuncu"; // Dinamik takma ad değişkeni
 
 let trackedCardCounts = {}; 
 
@@ -40,6 +41,7 @@ const mainMenu = document.getElementById('main-menu');
 const gameBoard = document.getElementById('game-board');
 const startGameButton = document.getElementById('start-game-button');
 const aboutButton = document.getElementById('about-button');
+const playerNicknameInput = document.getElementById('player-nickname'); // Yeni eklenen input seçici
 
 // Yenilenen Ayarlar Menüsü ve Buton Seçicileri Güncellendi
 const settingsToggleBtn = document.getElementById('settings-toggle-btn');
@@ -155,6 +157,8 @@ modalMenuBtn.addEventListener('click', () => { customModal.classList.remove('act
 
 startGameButton.addEventListener('click', () => {
     gameDifficulty = difficultySelect.value;
+    // Input alanından girilen ismi çekiyoruz, boşsa varsayılan "Oyuncu" kalıyor
+    playerNickname = playerNicknameInput.value.trim() || "Oyuncu"; 
     mainMenu.classList.add('hidden');
     gameBoard.classList.remove('hidden');
     initGame();
@@ -164,7 +168,7 @@ aboutButton.addEventListener('click', () => {
     modalMessage.innerHTML = `<strong>BLÖF KURALLARI</strong><br><br>• 52 kart dağıtılır. <strong>Sinek 2'li (2♣)</strong> olan oyuna başlar.<br>• Herkes son iddia edilen kartın altını, üstünü veya aynısını iddia ederek kart atmalıdır.<br>• Blöf kontrolü sonucu eğer yalan beyanda bulunulduysa yerdeki tüm kartlar, yalan iddiada bulunan tarafından alınır.<br>• Elindeki tüm kartları ilk bitiren oyunu kazanır.`;
     customModal.classList.add('active');
     modalCloseButton.classList.remove('hidden');
-    modalGameoverButtons.add('hidden');
+    modalGameoverButtons.classList.add('hidden');
 });
 
 restartButton.addEventListener('click', (e) => {
@@ -391,6 +395,7 @@ function cpuFirstTurn() {
     }, 1500);
 }
 
+// --- BİLGİSAYAR SIRASI ---
 function cpuTurn() {
     if (cpuHand.length <= 4 && Math.random() < 0.4) cpuSpeak('cpuWinning');
     else if (cpuHand.length >= 16 && Math.random() < 0.4) cpuSpeak('cpuLosing');
@@ -545,12 +550,14 @@ function checkBS(caller) {
     }, 2500); 
 }
 
+// --- OYUN BİTTİ KONTROLÜ ---
 function checkGameOver() {
     if (playerHand.length === 0) {
         playAudio(soundWin);
         if (chatTimeoutId) clearTimeout(chatTimeoutId);
         cpuChatBubble.classList.add('hidden');
-        showGameOverModal("👑 TEBRİKLER! <br><br>Elindeki tüm kartları bitirdin ve bu akıl oyununu kazandın! 🎉");
+        // Dinamik takma ad mesaj alanına eklendi
+        showGameOverModal(`👑 TEBRİKLER ${playerNickname}! <br><br>Elindeki tüm kartları bitirdin ve bu akıl oyununu kazandın! 🎉`);
         return true;
     } else if (cpuHand.length === 0) {
         playAudio(soundOver);
