@@ -398,3 +398,30 @@ button:disabled {
     border-width: 0 10px 10px 10px; border-style: solid;
     border-color: transparent transparent #ffffff transparent;
 }
+.footer-container {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.footer-container p {
+    margin: 0;
+    padding: 0;
+}
+
+.footer-github-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: #ffcc00; /* Ana tema rengine uygun olması için */
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+    margin-top: 5px;
+}
+
+.footer-github-link:hover {
+    opacity: 0.8;
+}
